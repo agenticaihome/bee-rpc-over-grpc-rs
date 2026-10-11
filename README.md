@@ -4,8 +4,20 @@ Rust port of [bee-rpc-over-grpc-py](https://github.com/bee-rpc-protocol/bee-rpc-
 Bee-RPC moves buffers of any size over gRPC. It splits a message into blocks, and
 each block has a hash, so a receiver can skip a block that it already holds.
 
-Status: **skeleton**. The crate has the `buffer.Buffer` types and nothing else.
-`PORTING.md` lists the work.
+Status: **specification ready, port not implemented**. The public API is in
+`crates/bee-rpc/src/` with `todo!()` bodies. The tests in `crates/bee-rpc/tests/`
+fail until the port is done.
+
+| File | Content |
+|---|---|
+| `PORTING.md` | The steps of the port, in order |
+| `AGENT_GUIDE.md` | Rules and safeguards for the agent that implements it |
+| `PROMPT.md` | The prompt to give to that agent |
+| `DEVIATIONS.md` | Where this crate is stricter than the reference, on purpose |
+| `crates/bee-rpc/tests/vectors/` | Expectations generated from the Python reference |
+| `tools/vectors/generate.py` | The generator of the vectors |
+| `tools/interop/py_peer.py` | A Python peer for the interop tests |
+| `SPEC.sha256` | Hashes of the specification files (CI checks them) |
 
 ## Why a Rust port
 
@@ -16,17 +28,29 @@ Status: **skeleton**. The crate has the `buffer.Buffer` types and nothing else.
 ## Compatibility rule
 
 The Python library at v0.0.2 is the reference. A Rust peer and a Python peer must
-talk to each other with no change on either side. If the two differ, the Python
-library is right, unless the Python library has a bug. Then open an issue in both repos.
+talk to each other with no change on either side. `DEVIATIONS.md` lists where the
+Rust parser refuses input that the reference accepts.
 
-## Build
+## Build and test
 
 ```sh
-cargo test --workspace
-cargo run -p gen-protos   # after a change of crates/bee-rpc/protos/
+cargo test --all-features
+cargo run -p gen-protos          # after a change of crates/bee-rpc/protos/
 ```
 
-`src/gen/` is committed, so a normal build does not need `protoc`.
+`src/gen/` is committed, so a normal build does not need `protoc`. CI runs only
+the test files listed in `.github/required-tests.txt`; a step of the port adds its
+tests there.
+
+To regenerate the vectors (maintainers only), with a Python 3.11 environment from
+`tools/vectors/requirements.txt`:
+
+```sh
+python -I tools/vectors/generate.py /tmp/new-vectors
+diff -r /tmp/new-vectors crates/bee-rpc/tests/vectors
+```
+
+Then copy them, run `tools/spec-hash.sh --write`, and commit both.
 
 ## License
 

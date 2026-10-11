@@ -1,31 +1,29 @@
 # Port plan
 
-Reference: `bee-rpc-over-grpc-py` v0.0.2 (`ab3c362`), `src/bee_rpc/`. About 3 500
-lines of source and 2 900 lines of tests. Port in this order. Each step is one PR.
-Each step ends with tests that use the same vectors as the Python tests.
+Reference: `bee-rpc-over-grpc-py` v0.0.2 (`ab3c3624`), `src/bee_rpc/`. Do the steps
+in this order. Each step is one PR. A step is done when its test files pass and are
+in `.github/required-tests.txt`.
 
-| Step | Python source | Content |
-|---|---|---|
-| 1 | `buffer.proto`, `buffer_pb2.py` | Done: `buffer.Buffer` types |
-| 2 | `utils.py` (`StreamControl`, `message_to_bytes`, hash helpers), `control.py` | Frame encoding and decoding without gRPC: head, chunk, separator, signal. Unit tests with fixed byte streams |
-| 3 | `block_splitter.py`, `block_builder.py`, `block_driver.py` | Blocks: split, hash, nested blocks (up to 32 levels), `previous_lengths_position` |
-| 4 | `reader.py`, `validate_lengths_tree.py` | Read and validate a block tree; check the object id |
-| 5 | `client.py`: `serialize_to_buffer`, `parse_from_buffer` | Send and receive a stream of messages with partitions. Use `futures` streams and `bytes` |
-| 6 | `client.py`: skip signal (`skip_requested_blocks`, `signal_block_buffer_stream`) | The reverse-direction `skip` field and the block store |
-| 7 | `client.py`: `client_grpc` | A generic bidi call over tonic: `call(method, [(index, bytes)]) -> [(index, bytes)]` |
+| Step | Module (`crates/bee-rpc/src/`) | Python source | Test files (`crates/bee-rpc/tests/`) |
+|---|---|---|---|
+| 1 | `buffer` | `buffer.proto` | Done |
+| 2 | `hash`, `pointer` | `utils.py`: hash algorithms, hash types, `block_pointer`, `resolve_hash_types`, `inherit_hash_types`, `block_id_from_pointer` | `hash`, `pointer` |
+| 3 | `bee_file`, `signal` | `client.write_to_file`, `reader.read_bee_file`, `utils.Signal` | `bee_file`, `signal` |
+| 4 | `frame`: `serialize_part` | `client.serialize_to_buffer`, `send_message` | `serialize` |
+| 5 | `skip` | `control.py`, `client.skip_requested_blocks` | `skip` |
+| 6 | `frame`: `Parser` | `client.parse_from_buffer`, `parser_iterator`, `save_chunks_to_block`, `save_block_content` (hash check) | `parse`, `parse_errors` |
+| 7 | `grpc` (feature `grpc`) | `client.client_grpc` | `interop` |
 
-Steps 2 to 5 and 7 are what the Celaut light client needs first. Step 6 (skip) and
-the disk block store can come later. The phone has no need to hold large blocks on disk.
+Each module has its rules in its doc comment. The tests check those rules.
 
-## Tests
+## Not in this plan
 
-- Take the vectors from `tests/` of the Python repo. `wire_harness.py` and
-  `peer_sender.py` show how the tests send bytes between two peers.
-- Add an interop test in CI: a Python peer and a Rust peer, in both directions.
-  Install `bee-rpc-over-grpc-py` at the tag `v0.0.2`.
+Do not start these. They need new vectors and the approval of a maintainer.
 
-## Not in this crate
-
-- The TLS identity check of a Celaut node. It is Celaut-specific and lives in
-  `celaut-wire` in chatui.
-- The Celaut protobuf types (`celaut.proto`), which are in `celaut-proto` in chatui.
+- A block store on disk: multiblock directories, `_.json`, the wbp file
+  (`block_driver.py`, `block_builder.py`, `block_splitter.py`, `reader.py`).
+- The send side of blocks: build a multiblock object from a message, and frame
+  blocks to `block_depth` (`read_from_registry`, `build_multiblock`).
+- Partitions (`Head.partitions`, `get_submessage`, `put_submessage`).
+- The TLS identity check of a Celaut node. It is Celaut-specific and belongs in
+  `celaut-wire` in celaut-project/chatui.

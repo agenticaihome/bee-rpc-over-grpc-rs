@@ -1,0 +1,5 @@
+# The Python reference and its pinned dependencies, for tools/vectors/generate.py
+# and tools/interop/py_peer.py. Python 3.11.
+grpcio==1.56.0
+protobuf==7.36.2
+bee-rpc @ git+https://github.com/bee-rpc-protocol/bee-rpc-over-grpc-py.git@ab3c3624f3d40cabe221281103d91eef33793f92

@@ -10,7 +10,9 @@ fn main() {
     let protos = root.join("protos");
     let out = root.join("src/gen");
     std::fs::create_dir_all(&out).expect("create output directory");
+    // BTreeMap, so that a Buffer with partitions encodes the same bytes every time.
     prost_build::Config::new()
+        .btree_map(["."])
         .out_dir(&out)
         .compile_protos(&[protos.join("buffer.proto")], &[protos])
         .expect("compile protos");

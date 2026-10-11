@@ -1,0 +1,9 @@
+# Changes to the specification need a maintainer.
+/crates/bee-rpc/tests/ @0xf965
+/crates/bee-rpc/protos/ @0xf965
+/tools/ @0xf965
+/.github/ @0xf965
+/DEVIATIONS.md @0xf965
+/AGENT_GUIDE.md @0xf965
+/PROMPT.md @0xf965
+/SPEC.sha256 @0xf965

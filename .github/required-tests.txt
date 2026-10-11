@@ -1,0 +1,9 @@
+# Test files (crates/bee-rpc/tests/<name>.rs) that CI runs and that must pass.
+# Add the names of a step in the PR that finishes it. Never remove a line.
+#
+#   step 2: hash, pointer
+#   step 3: bee_file, signal
+#   step 4: serialize
+#   step 5: skip
+#   step 6: parse, parse_errors
+#   step 7: interop

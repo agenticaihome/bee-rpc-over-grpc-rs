@@ -39,8 +39,8 @@ pub mod buffer {
     pub mod head {
         #[derive(Clone, PartialEq, ::prost::Message)]
         pub struct Partition {
-            #[prost(map = "int32, message", tag = "1")]
-            pub index: ::std::collections::HashMap<i32, Partition>,
+            #[prost(btree_map = "int32, message", tag = "1")]
+            pub index: ::prost::alloc::collections::BTreeMap<i32, Partition>,
         }
     }
     #[derive(Clone, PartialEq, ::prost::Message)]

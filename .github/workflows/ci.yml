@@ -18,10 +18,43 @@ jobs:
       - uses: dtolnay/rust-toolchain@1.99.0
         with:
           components: rustfmt, clippy
+      - uses: actions/setup-python@v6
+        with:
+          python-version: '3.11'
+      - name: Install the Python reference
+        run: pip install -r tools/vectors/requirements.txt
+
+      - name: The spec files are unchanged
+        run: tools/spec-hash.sh --check
+      - name: The crate source does not know the tests
+        run: |
+          if grep -rnE 'tests/vectors|manifest\.json|\.bee"|one_block|big_block|nested_depth|three_messages|bytes_chunk|head_large|nesting_at_limit' \
+              crates/bee-rpc/src --include='*.rs'; then
+            echo "crates/bee-rpc/src must not refer to test vectors" >&2
+            exit 1
+          fi
+
       - run: cargo fmt --all --check
-      - run: cargo clippy --workspace --all-targets -- -D warnings
-      - run: cargo test --workspace
-      - name: Generated code matches the protos
+      - run: cargo clippy --workspace --all-targets --all-features -- -D warnings
+      - name: All tests compile
+        run: cargo test --workspace --all-features --no-run
+
+      - name: Tests of the finished steps (.github/required-tests.txt)
+        env:
+          BEE_RPC_PYTHON: python
+        run: |
+          cargo test --workspace --lib --all-features
+          while read -r t; do
+            case "$t" in ''|'#'*) continue ;; esac
+            cargo test --all-features --test "$t"
+          done < .github/required-tests.txt
+
+      - name: The vectors match the Python reference
+        run: |
+          python -I tools/vectors/generate.py "$RUNNER_TEMP/vectors"
+          diff -r "$RUNNER_TEMP/vectors" crates/bee-rpc/tests/vectors
+
+      - name: The generated code matches the protos
         run: |
           sudo apt-get update && sudo apt-get install -y protobuf-compiler
           cargo run -p gen-protos
