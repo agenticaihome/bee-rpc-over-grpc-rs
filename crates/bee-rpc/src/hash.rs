@@ -3,6 +3,11 @@
 //! A hash type is the digest of the algorithm over the empty input. A pointer
 //! carries it next to each hash value, so a reader knows which algorithm made it.
 
+use blake2::digest::consts::U32;
+use blake2::{Blake2b, Blake2b512};
+use sha2::{Digest, Sha256, Sha512};
+use sha3::{Sha3_256, Sha3_512};
+
 /// The algorithms that the reference registers by default.
 #[derive(Clone, Copy, Debug, Default, PartialEq, Eq, Hash)]
 pub enum HashAlgorithm {
@@ -46,18 +51,27 @@ impl HashAlgorithm {
 
     /// The hash type: the digest of this algorithm over the empty input.
     pub fn hash_type(self) -> Vec<u8> {
-        todo!("step 2: hash types")
+        self.digest(&[])
     }
 
     /// The algorithm whose hash type is `hash_type`, if it is one of [`Self::ALL`].
     pub fn from_hash_type(hash_type: &[u8]) -> Option<HashAlgorithm> {
-        let _ = hash_type;
-        todo!("step 2: hash types")
+        HashAlgorithm::ALL
+            .into_iter()
+            .find(|alg| alg.hash_type() == hash_type)
     }
 
     /// A new incremental hasher.
     pub fn hasher(self) -> Hasher {
-        todo!("step 2: hash types")
+        let state = match self {
+            HashAlgorithm::Sha3_256 => State::Sha3_256(Sha3_256::new()),
+            HashAlgorithm::Sha3_512 => State::Sha3_512(Sha3_512::new()),
+            HashAlgorithm::Sha256 => State::Sha256(Sha256::new()),
+            HashAlgorithm::Sha512 => State::Sha512(Sha512::new()),
+            HashAlgorithm::Blake2b256 => State::Blake2b256(Blake2b::<U32>::new()),
+            HashAlgorithm::Blake2b512 => State::Blake2b512(Blake2b512::new()),
+        };
+        Hasher { state }
     }
 
     /// The digest of `data`.
@@ -70,19 +84,40 @@ impl HashAlgorithm {
 
 /// An incremental hasher for one [`HashAlgorithm`].
 pub struct Hasher {
-    // Add the state you need. The field is private, so you can change it.
-    _private: (),
+    state: State,
+}
+
+enum State {
+    Sha3_256(Sha3_256),
+    Sha3_512(Sha3_512),
+    Sha256(Sha256),
+    Sha512(Sha512),
+    Blake2b256(Blake2b<U32>),
+    Blake2b512(Blake2b512),
 }
 
 impl Hasher {
     /// Add bytes.
     pub fn update(&mut self, data: &[u8]) {
-        let _ = data;
-        todo!("step 2: hash types")
+        match &mut self.state {
+            State::Sha3_256(h) => h.update(data),
+            State::Sha3_512(h) => h.update(data),
+            State::Sha256(h) => h.update(data),
+            State::Sha512(h) => h.update(data),
+            State::Blake2b256(h) => h.update(data),
+            State::Blake2b512(h) => h.update(data),
+        }
     }
 
     /// The digest of all the bytes added.
     pub fn finalize(self) -> Vec<u8> {
-        todo!("step 2: hash types")
+        match self.state {
+            State::Sha3_256(h) => h.finalize().to_vec(),
+            State::Sha3_512(h) => h.finalize().to_vec(),
+            State::Sha256(h) => h.finalize().to_vec(),
+            State::Sha512(h) => h.finalize().to_vec(),
+            State::Blake2b256(h) => h.finalize().to_vec(),
+            State::Blake2b512(h) => h.finalize().to_vec(),
+        }
     }
 }
