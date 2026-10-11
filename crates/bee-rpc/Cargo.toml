@@ -1,0 +1,10 @@
+[package]
+name = "bee-rpc"
+description = "Bee-RPC over gRPC: move buffers of any size, in blocks, with a hash per block"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+repository.workspace = true
+
+[dependencies]
+prost = "0.14"
