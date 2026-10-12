@@ -9,3 +9,5 @@
 #   step 7: interop
 hash
 pointer
+bee_file
+signal
