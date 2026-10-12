@@ -12,7 +12,10 @@ default = []
 grpc = ["dep:tonic", "dep:tokio"]
 
 [dependencies]
+blake2 = "0.11"
 prost = "0.14"
+sha2 = "0.11"
+sha3 = "0.12"
 thiserror = "2"
 tonic = { version = "0.14", optional = true }
 tokio = { version = "1", optional = true, features = ["sync"] }
@@ -20,5 +23,4 @@ tokio = { version = "1", optional = true, features = ["sync"] }
 [dev-dependencies]
 hex = "0.4"
 serde_json = "1"
-sha2 = "0.10"
 tokio = { version = "1", features = ["macros", "rt-multi-thread", "time", "process", "io-util"] }
