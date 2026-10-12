@@ -7,5 +7,7 @@
 #   step 5: skip
 #   step 6: parse, parse_errors
 #   step 7: interop
+hash
+pointer
 bee_file
 signal
